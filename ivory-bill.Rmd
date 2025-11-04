@@ -1,0 +1,34 @@
+---
+title: "Ivory-Billed Woodpecker"
+author: "Brianna Saylor"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+packages<-c("cowplot","dismo","leaflet","mapdata","OpenStreetMap","rasterVis","rdryad","rgbif","sf","tidyverse")
+sapply(packages, library, character.only=T)
+```
+
+```{r woodpecker gbif data, echo=TRUE, message=FALSE, warning=FALSE}
+pilo.dismo <- gbif("campephilus", species = "principalis", ext = c(-130, -70, 10, 50, 
+                    geo = TRUE, download = TRUE, removeZeros = TRUE))
+```
+
+```{r simple woodpececker distribution, echo=TRUE, message=FALSE, warning=FALSE, fig.height=6, fig.width=7}
+us <- map_data("state")
+
+ggplot() +
+  geom_polygon(data = us, aes(x=long, y = lat, group = group),
+               fill = "white", color="black") +
+  geom_point(data = pilo.dismo, aes(x=lon, y=lat), size = 2.5) + 
+  xlab("Longitude") + ylab("Latitude") +
+  coord_fixed(xlim = c(-97,-76), ylim = c(25,37)) +
+  xlab("Longitude") + ylab("Latitude") + ggtitle("Historic Ivory-Billed Woodpecker Range") + 
+  theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "deepskyblue2"))
+```
+
