@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-packages<-c("cowplot","dismo","leaflet","mapdata","OpenStreetMap","rasterVis","rdryad","rgbif","sf","tidyverse")
+packages<-c("cowplot","dismo","leaflet","mapdata","OpenStreetMap","rasterVis","rdryad","rgbif","sf","tidyverse", "ggspatial")
 sapply(packages, library, character.only=T)
 ```
 
@@ -22,13 +22,30 @@ us <- map_data("state")
 ggplot() +
   geom_polygon(data = us, aes(x=long, y = lat, group = group),
                fill = "white", color="black") +
-  geom_point(data = pilo.dismo, aes(x=lon, y=lat), size = 2.5) + 
+  geom_point(data = pilo.dismo, aes(x=lon, y=lat), size = 2) + 
   xlab("Longitude") + ylab("Latitude") +
   coord_fixed(xlim = c(-97,-76), ylim = c(25,37)) +
   xlab("Longitude") + ylab("Latitude") + ggtitle("Historic Ivory-Billed Woodpecker Range") + 
   theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + 
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
-        panel.background = element_rect(fill = "deepskyblue2"))
+        panel.background = element_rect(fill = "deepskyblue2"))  +
+  annotation_scale(location = "bl", width_hint = 0.3) +
+  annotation_north_arrow(
+    location = "bl",
+    which_north = "true",
+    pad_x = unit(0.3, "in"), pad_y = unit(0.3, "in"),
+    style = north_arrow_fancy_orienteering(fill = c("black","black"), text_size = 0,))
+```
+
+```{r limit to us distribution, echo=TRUE, message=FALSE, warning=FALSE}
+pilo.rgbif <- occ_data(scientificName = "Campephilus principalis",
+                       hasCoordinate = TRUE,
+                       decimalLongitude = "-97,-76", 
+                       decimalLatitude = "25,37")
+```
+
+```{r}
+
 ```
 
