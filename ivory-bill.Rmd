@@ -82,3 +82,19 @@ presence.model <- dismo::predict(object = bioclim.model,
                                  ext = bio.extent)
 ```
 
+```{r species distribution maps, echo=TRUE, message=FALSE, warning=FALSE, fig.height=6, fig.width=10}
+rasterVis::gplot(presence.model) + 
+  geom_polygon(data = us, aes(x= long, y = lat, group = group),
+               fill = "gray", color="black") +
+  geom_raster(aes(fill=value)) +
+  geom_polygon(data = us, aes(x= long, y = lat, group = group),
+               fill = NA, color="black") +
+  geom_point(data = pilo.rgbif.df, aes(x = x, y = y), size = 2, color = "black", alpha = 0.5) +
+  scale_fill_gradientn(colours=c("brown","yellow","darkgreen"), "Probability") +
+  coord_fixed(xlim = c(-97,-76), ylim = c(25,37)) +
+  xlab("Longitude") + ylab("Latitude") + ggtitle("Probability of IBWO Occurrence") + 
+  theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + theme(legend.position = "right") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "deepskyblue2"))
+```
