@@ -96,5 +96,29 @@ rasterVis::gplot(presence.model) +
   theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + theme(legend.position = "right") +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
-        panel.background = element_rect(fill = "deepskyblue2"))
+        panel.background = element_rect(fill = "deepskyblue2")) 
+```
+
+```{r leaflet species distribution, echo=TRUE, message=FALSE, warning=FALSE, fig.height=8, fig.width=10}
+colors <- c("brown","yellow","darkgreen")
+
+leaflet() %>% 
+  addTiles() %>%
+  addRasterImage(presence.model, colors = colors, opacity = 0.8) %>%
+  addCircleMarkers(data = pilo.rgbif.df,
+                   lng = ~x,
+                   lat = ~y,
+                   weight = 0.5,
+                   color = "grey",
+                   fillColor = "green",
+                   fillOpacity = 0.7,
+                   popup = ~paste0(
+  "<b>Year:</b> ", ifelse(is.na(year), "NULL", year), "<br>",
+  "<b>Basis of Record:</b> ", ifelse(is.na(BasisOfRecord), "NULL", BasisOfRecord), "<br>",
+  "<b>Location:</b> ", ifelse(is.na(location), "NULL", location))) %>%
+  addMiniMap(position = 'topright',
+             width = 100, 
+             height = 100,
+             toggleDisplay = FALSE) %>%
+  addScaleBar(position = "bottomright")
 ```
