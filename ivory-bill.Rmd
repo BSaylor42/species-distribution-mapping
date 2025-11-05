@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-packages<-c("cowplot","dismo","leaflet","mapdata","OpenStreetMap","rasterVis","rdryad","rgbif","sf","tidyverse", "ggspatial")
+packages<-c("cowplot","dismo","leaflet","mapdata","OpenStreetMap","rasterVis","rdryad","rgbif","sf","tidyverse", "ggspatial", "geodata")
 sapply(packages, library, character.only=T)
 ```
 
@@ -45,7 +45,40 @@ pilo.rgbif <- occ_data(scientificName = "Campephilus principalis",
                        decimalLatitude = "25,37")
 ```
 
-```{r}
+```{r pilo piar data, echo=TRUE, message=FALSE, warning=FALSE}
+pilo.rgbif.df <- cbind.data.frame(pilo.rgbif$data$species,
+                                  pilo.rgbif$data$decimalLatitude,
+                                  pilo.rgbif$data$decimalLongitude,
+                                  pilo.rgbif$data$basisOfRecord,
+                                  pilo.rgbif$data$stateProvince,
+                                  pilo.rgbif$data$year,
+                                  pilo.rgbif$data$locality,
+                                  pilo.rgbif$data$verbatimLocality)
+colnames(pilo.rgbif.df) <- c("species","y","x", "BasisOfRecord", "state","year","location", "VerbatimLocation")
+```
 
+```{r species distribution, echo=TRUE, message=FALSE, warning=FALSE}
+# bioclim <- getData(name = "worldclim", res = 2.5, var = "bio", path = "./")
+# getData no long works
+
+bioclim <- worldclim_global(var = "bio", res = 10, path = "./")
+bioclim <- bioclim[[c(1, 3, 10, 11, 12, 16, 17)]] # select only the variable we are interested in
+names(bioclim) <- c("Ann Mean Temp","Isothermality", "Mean Temp Warmest Qtr","Mean Temp Coldest Qtr",
+                    "Annual Precip","Precip Wettest Qtr","Precip Driest Qtr")
+
+bio.extent <- extent(x = c(
+  min(pilo.rgbif.df$x),
+  max(pilo.rgbif.df$x),
+  min(pilo.rgbif.df$y),
+  max(pilo.rgbif.df$y)))
+
+bioclim.extent <- crop(x = bioclim, y = bio.extent)
+
+bioclim_raster <- raster::stack(bioclim.extent) # convert SpatRaster to Raster so dismo can handle it
+
+bioclim.model <- bioclim(x = bioclim_raster, p = cbind(pilo.rgbif.df$x,pilo.rgbif.df$y))
+presence.model <- dismo::predict(object = bioclim.model, 
+                                 x = bioclim_raster, 
+                                 ext = bio.extent)
 ```
 
