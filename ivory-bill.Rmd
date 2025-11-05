@@ -1,8 +1,12 @@
 ---
-title: "Ivory-Billed Woodpecker"
+title: "To Be Or Not To Be: The Ivory-Billed Woodpecker"
 author: "Brianna Saylor"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+wrap: sentence
 ---
 
 ```{r setup, include=FALSE}
@@ -11,12 +15,30 @@ packages<-c("cowplot","dismo","leaflet","mapdata","OpenStreetMap","rasterVis","r
 sapply(packages, library, character.only=T)
 ```
 
+## Distribution 
+
+<center>
+<iframe src="https://macaulaylibrary.org/asset/72932691/embed" height="397" width="640" frameborder="0" allowfullscreen></iframe>
+</center>
+
+The Ivory-Billed Woodpecker (IBWO) was an iconic bird of the south. It's nickname was the Lord God Bird due to its humongous size. At 20 inches tall with at 30 inch wingspan it was the largest woodpecker the US and the third largest in the world. It's most iconic feature is it's ivory bill. 
+
+The bird lived in dense, old growth forests mostly in the swamp lands of the south. Heavy logging in the early 20th century decimated their population. In 1940, it was estimated only 22-24 birds remained in the US. The last universally accepted sighting occurred in 1944. Severe population declines causes it to be listed as endangered in 1967 shortly after the creation of the Endangered Species Act. The last accepted sighting of the Cuban population occurred in 1987. Reported sightings still occur to this day giving rise to its other nickname the Ghost Bird. 
+
+The IBWO is surrounded by a lot of controversy. In 2021 the USFWS proposed the bird be removed from the endangered species list due to extinction. However, they have faced significant backlash and public commentary claiming the species still exists due to continued isolated sightings of the Ghost Bird. Some claim these sightings are a case of mistaken identity. The IBWO appears morphologically similar to the Pileated Woodpecker and its call sounds similar to some calls made by Blue Jays. Others are adamant the Ghost Bird is still out there somewhere. Due to high tension, the USFWS has kept the IBWO on the endangered species list and is continuing to explore the potential for its existence. 
+
+<center>
+![Pileated Woodpecker on top and Ivory-Billed Woodpecker on bottom.](piwo_ibwo.png){height="400"}
+</center> <br> <br>
+
+Ornithologists have been able to reconstruct the range of the IBWO through historical records: 
+
 ```{r woodpecker gbif data, echo=TRUE, message=FALSE, warning=FALSE}
 pilo.dismo <- gbif("campephilus", species = "principalis", ext = c(-130, -70, 10, 50, 
                     geo = TRUE, download = TRUE, removeZeros = TRUE))
 ```
 
-```{r simple woodpececker distribution, echo=TRUE, message=FALSE, warning=FALSE, fig.height=6, fig.width=7}
+```{r simple woodpececker distribution, echo=TRUE, message=FALSE, warning=FALSE, fig.height=6, fig.width=7, fig.align='center'}
 us <- map_data("state")
 
 ggplot() +
@@ -25,7 +47,7 @@ ggplot() +
   geom_point(data = pilo.dismo, aes(x=lon, y=lat), size = 2) + 
   xlab("Longitude") + ylab("Latitude") +
   coord_fixed(xlim = c(-97,-76), ylim = c(25,37)) +
-  xlab("Longitude") + ylab("Latitude") + ggtitle("Historic Ivory-Billed Woodpecker Range") + 
+  xlab("Longitude") + ylab("Latitude") + ggtitle("Historic Ivory-Billed Woodpecker Range in the US") + 
   theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + 
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
@@ -37,15 +59,18 @@ ggplot() +
     pad_x = unit(0.3, "in"), pad_y = unit(0.3, "in"),
     style = north_arrow_fancy_orienteering(fill = c("black","black"), text_size = 0,))
 ```
+<br>
 
-```{r limit to us distribution, echo=TRUE, message=FALSE, warning=FALSE}
+## Occurrence Probability 
+
+```{r limit to us distribution, echo=TRUE, message=FALSE, warning=FALSE, include=FALSE}
 pilo.rgbif <- occ_data(scientificName = "Campephilus principalis",
                        hasCoordinate = TRUE,
                        decimalLongitude = "-97,-76", 
                        decimalLatitude = "25,37")
 ```
 
-```{r pilo piar data, echo=TRUE, message=FALSE, warning=FALSE}
+```{r pilo piar data, echo=TRUE, message=FALSE, warning=FALSE, include=FALSE}
 pilo.rgbif.df <- cbind.data.frame(pilo.rgbif$data$species,
                                   pilo.rgbif$data$decimalLatitude,
                                   pilo.rgbif$data$decimalLongitude,
@@ -82,14 +107,14 @@ presence.model <- dismo::predict(object = bioclim.model,
                                  ext = bio.extent)
 ```
 
-```{r species distribution maps, echo=TRUE, message=FALSE, warning=FALSE, fig.height=6, fig.width=10}
+```{r species distribution maps, echo=TRUE, message=FALSE, warning=FALSE, fig.height=6, fig.width=10, fig.align='center'}
 rasterVis::gplot(presence.model) + 
   geom_polygon(data = us, aes(x= long, y = lat, group = group),
                fill = "gray", color="black") +
   geom_raster(aes(fill=value)) +
   geom_polygon(data = us, aes(x= long, y = lat, group = group),
                fill = NA, color="black") +
-  geom_point(data = pilo.rgbif.df, aes(x = x, y = y), size = 2, color = "black", alpha = 0.5) +
+  geom_point(data = pilo.rgbif.df, aes(x = x, y = y), size = 2, color = "black", alpha = 0.7) +
   scale_fill_gradientn(colours=c("brown","yellow","darkgreen"), "Probability") +
   coord_fixed(xlim = c(-97,-76), ylim = c(25,37)) +
   xlab("Longitude") + ylab("Latitude") + ggtitle("Probability of IBWO Occurrence") + 
@@ -98,7 +123,11 @@ rasterVis::gplot(presence.model) +
         panel.grid.minor = element_blank(),
         panel.background = element_rect(fill = "deepskyblue2")) 
 ```
+I used climate data to predict the occurrence of the IBWO. Factors included in the model are: annual mean temperature, isothermality, mean temperature of the warmest quarter, mean temperature of the coldest quarter, annual precipitation, precipitation of the wettest quarter, and precipitation of the driest quarter. Using these parameters, the highest probability of occurrence in is Florida. However, the model predicts low probability of occurrence for sightings in Louisiana, Arkansas, and Mississippi. This suggests that there are additional factors driving their distribution. For instance, habitat parameters such as forest presence may be another important factor to include in future models. 
 
+<br>
+
+The interactive map below provides more information about IBWO sightings:
 ```{r leaflet species distribution, echo=TRUE, message=FALSE, warning=FALSE, fig.height=8, fig.width=10}
 colors <- c("brown","yellow","darkgreen")
 
@@ -122,3 +151,13 @@ leaflet() %>%
              toggleDisplay = FALSE) %>%
   addScaleBar(position = "bottomright")
 ```
+
+<br> 
+
+If you are interested in exploring the most recent sightings and evidence you can find links below: 
+
+< [Rediscovery in Arkansas 2004 - article in Science](https://www.science.org/doi/10.1126/science.1114103)
+
+< [Evidence of Survival 2024 - trail cameras](https://www.biorxiv.org/content/10.1101/2022.04.06.487399v1.full)
+
+< [USFWS Comprehensive Species Description and Report](https://www.fws.gov/sites/default/files/documents/2024-04/921.pdf)
