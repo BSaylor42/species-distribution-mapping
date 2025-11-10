@@ -17,6 +17,7 @@ previous_previous_index.html
 *.zip
 *.png
 *.jpg 
+*climate/
 
 # History files
 .Rhistory
