@@ -11,7 +11,7 @@ wrap: sentence
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-packages<-c("cowplot","dismo","leaflet","mapdata","OpenStreetMap","rasterVis","rdryad","rgbif","sf","tidyverse", "ggspatial", "geodata")
+packages<-c("cowplot","dismo","leaflet","mapdata","OpenStreetMap","rasterVis","rdryad","rgbif","sf","tidyverse", "ggspatial", "geodata", "terra", "tidyterra")
 sapply(packages, library, character.only=T)
 ```
 
@@ -153,6 +153,35 @@ leaflet() %>%
 ```
 
 <br> 
+
+```{r map forest cover, echo=TRUE, message=FALSE, warning=FALSE, fig.height=6, fig.width=7, fig.align='center'}
+nlcd <- rast("NLCD2020_clip.tif")
+
+nlcd_lowres <- aggregate(nlcd, fact = 10, fun = "modal")  
+nlcd_df <- as.data.frame(nlcd_lowres, xy = TRUE)
+nlcd_df_forest <- nlcd_df %>% 
+  filter(landcover >= 1, landcover <= 6)
+
+ggplot() +
+  # Background: NLCD raster
+  geom_raster(data = nlcd_df_forest, aes(x = x, y = y, fill = landcover)) +
+  scale_fill_viridis_c(na.value = "transparent", name = "Land cover") +
+
+  # State outlines
+  geom_polygon(data = us, aes(x = long, y = lat, group = group),
+               fill = NA, color = "black", size = 0.3) +
+
+  # Species points
+  geom_point(data = pilo.dismo, aes(x = lon, y = lat),
+             color = "black", size = 2, alpha = 0.7) +
+
+  coord_sf(xlim = c(-97,-76), ylim = c(25,37), expand = FALSE) +
+  labs(title = "Historic Ivory-Billed Woodpecker Range in the US",
+       x = "Longitude", y = "Latitude") +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
 
 If you are interested in exploring the most recent sightings and evidence you can find links below: 
 
