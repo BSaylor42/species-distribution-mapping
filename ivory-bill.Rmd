@@ -36,6 +36,7 @@ Ornithologists have been able to reconstruct the range of the IBWO through histo
 ```{r woodpecker gbif data, echo=TRUE, message=FALSE, warning=FALSE}
 pilo.dismo <- gbif("campephilus", species = "principalis", ext = c(-130, -70, 10, 50, 
                     geo = TRUE, download = TRUE, removeZeros = TRUE))
+pilo.dismo <- pilo.dismo[pilo.dismo$lat != 27.57333, ] # remove occurrence point in the ocean
 ```
 
 ```{r simple woodpececker distribution, echo=TRUE, message=FALSE, warning=FALSE, fig.height=6, fig.width=7, fig.align='center'}
@@ -51,13 +52,7 @@ ggplot() +
   theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + 
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
-        panel.background = element_rect(fill = "deepskyblue2"))  +
-  annotation_scale(location = "bl", width_hint = 0.3) +
-  annotation_north_arrow(
-    location = "bl",
-    which_north = "true",
-    pad_x = unit(0.3, "in"), pad_y = unit(0.3, "in"),
-    style = north_arrow_fancy_orienteering(fill = c("black","black"), text_size = 0,))
+        panel.background = element_rect(fill = "deepskyblue"))  
 ```
 <br>
 
@@ -80,6 +75,7 @@ pilo.rgbif.df <- cbind.data.frame(pilo.rgbif$data$species,
                                   pilo.rgbif$data$locality,
                                   pilo.rgbif$data$verbatimLocality)
 colnames(pilo.rgbif.df) <- c("species","y","x", "BasisOfRecord", "state","year","location", "VerbatimLocation")
+pilo.rgbif.df <- pilo.rgbif.df[pilo.rgbif.df$y != 27.57333, ] # remove occurrence point in the ocean
 ```
 
 ```{r species distribution, echo=TRUE, message=FALSE, warning=FALSE}
@@ -115,7 +111,7 @@ rasterVis::gplot(presence.model) +
   geom_polygon(data = us, aes(x= long, y = lat, group = group),
                fill = NA, color="black") +
   geom_point(data = pilo.rgbif.df, aes(x = x, y = y), size = 2, color = "black", alpha = 0.7) +
-  scale_fill_gradientn(colours=c("brown","yellow","darkgreen"), "Probability") +
+  scale_fill_gradientn(colours=c("brown3","yellow","darkgreen"), "Probability") +
   coord_fixed(xlim = c(-97,-76), ylim = c(25,37)) +
   xlab("Longitude") + ylab("Latitude") + ggtitle("Probability of IBWO Occurrence") + 
   theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + theme(legend.position = "right") +
@@ -129,7 +125,7 @@ I used climate data to predict the occurrence of the IBWO. Factors included in t
 
 The interactive map below provides more information about IBWO sightings:
 ```{r leaflet species distribution, echo=TRUE, message=FALSE, warning=FALSE, fig.height=8, fig.width=10}
-colors <- c("brown","yellow","darkgreen")
+colors <- c("brown3","yellow","darkgreen")
 
 leaflet() %>% 
   addTiles() %>%
@@ -164,24 +160,22 @@ nlcd_df_forest <- nlcd_df %>%
 
 ggplot() +
   # Background: NLCD raster
-  geom_raster(data = nlcd_df_forest, aes(x = x, y = y, fill = landcover)) +
-  scale_fill_viridis_c(na.value = "transparent", name = "Land cover") +
-
+  geom_raster(data = nlcd_df_forest, aes(x = x, y = y), fill = "forestgreen") +
   # State outlines
   geom_polygon(data = us, aes(x = long, y = lat, group = group),
                fill = NA, color = "black", size = 0.3) +
-
   # Species points
   geom_point(data = pilo.dismo, aes(x = lon, y = lat),
              color = "black", size = 2, alpha = 0.7) +
-
   coord_sf(xlim = c(-97,-76), ylim = c(25,37), expand = FALSE) +
-  labs(title = "Historic Ivory-Billed Woodpecker Range in the US",
+  labs(title = "2020 Forest Cover and the IBWO Historic Range",
        x = "Longitude", y = "Latitude") +
   theme_classic() +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) 
 ```
+Because the model predicted low occurrence probability at known occurrence points, I decided to explore how forest cover overlaps with the IBWO historic range. I gathered land cover data from Google Earth Engine and overlayed the IBWO historic range. The map shows forest cover in the US in 2020. The occurrence points and forest cover do not overlap as much as I had hoped. This could be because deforestation was a major cause for the drastic drop in the IBWO population. Comparing where forest cover was historically may provide better insight into the distribution of the IBWO. 
 
+<br>
 
 If you are interested in exploring the most recent sightings and evidence you can find links below: 
 
